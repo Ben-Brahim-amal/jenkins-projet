@@ -17,9 +17,9 @@ pipeline {
         
         stage('Run Script') {
             steps {
-                bat 'script.py'
-            }
+                bat '"C:\\Users\\Lenovo\\AppData\\Local\\Programs\\Python\\Python313\\python.exe" script.py'
+                }
         }
-        
+
     }
 }
