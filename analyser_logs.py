@@ -56,6 +56,3 @@ print("\n======================================\n")
 with open("resume_logs.txt", "w", encoding="cp1252", errors="replace") as out:
     out.write(summary)
 
-    
-#modiffication du url de gemini
-generativelanguage.googleapis.com
