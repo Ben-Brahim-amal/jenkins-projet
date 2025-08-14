@@ -12,5 +12,10 @@ pipeline {
                 bat 'script.py'
             }
         }
+	stage('Run Script') {
+            steps {
+                bat 'script.py'
+            }
+        }
     }
 }
