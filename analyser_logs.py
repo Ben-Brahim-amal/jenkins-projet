@@ -11,12 +11,14 @@ with open("logs.txt", "r", encoding="latin1") as f:
     logs = f.read()
 
 # Préparer le prompt pour Gemini
-prompt = f"""Aide a comprendre l'erreur si elle existe dans les logs suivants. si il n a pas d'erreur, mentionne que tous vas bien
-Dans les 2 cas fais un résumé des logs Tres important : Propose une solution au erreurs rencontrés.
+prompt = f"""Aide à comprendre l'erreur si elle existe dans les logs suivants.
+Si il n'y a pas d'erreur, mentionne que tout va bien.
+Dans les 2 cas fais un résumé des logs.
+Très important : Propose une solution aux erreurs rencontrées.
+
 Voici les logs :
 {logs}
 """
-
 
 headers = {
     "Content-Type": "application/json"
@@ -32,20 +34,24 @@ body = {
     ]
 }
 
+summary = None  # Résumé par défaut
+
 try:
     # Appel API Gemini
     response = requests.post(GEMINI_URL, headers=headers, data=json.dumps(body))
-    response.raise_for_status()  # Pour lever une erreur HTTP si status != 200
-except requests.exceptions.RequestException as e:
-    print(f"Erreur lors de la requête API Gemini : {e}")
-    exit(1)
+    response.raise_for_status()  # Lève une erreur si status != 200
 
-# Gérer la réponse
-data = response.json()
-try:
+    # Gérer la réponse
+    data = response.json()
     summary = data["candidates"][0]["content"]["parts"][0]["text"]
-except (KeyError, IndexError):
-    summary = "Erreur lors de l'analyse de la réponse Gemini."
+
+except requests.exceptions.HTTPError as e:
+    if response.status_code == 429:
+        summary = "⚠️ Erreur 429: Trop de requêtes envoyées à Gemini. Réessaie plus tard."
+    else:
+        summary = f"❌ Erreur API Gemini : {e}"
+except Exception as e:
+    summary = f"❌ Erreur inattendue : {e}"
 
 # Afficher dans Jenkins console
 print("\n===== Résumé des logs par Gemini =====\n")
@@ -55,4 +61,3 @@ print("\n======================================\n")
 # Sauvegarder dans un fichier
 with open("resume_logs.txt", "w", encoding="cp1252", errors="replace") as out:
     out.write(summary)
-
